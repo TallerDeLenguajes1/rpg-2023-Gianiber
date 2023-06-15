@@ -1,0 +1,15 @@
+C:\RepoTaller\rpg-2023-Gianiber\bin\Debug\net7.0\rpg-2023-Gianiber.exe
+C:\RepoTaller\rpg-2023-Gianiber\bin\Debug\net7.0\rpg-2023-Gianiber.deps.json
+C:\RepoTaller\rpg-2023-Gianiber\bin\Debug\net7.0\rpg-2023-Gianiber.runtimeconfig.json
+C:\RepoTaller\rpg-2023-Gianiber\bin\Debug\net7.0\rpg-2023-Gianiber.dll
+C:\RepoTaller\rpg-2023-Gianiber\bin\Debug\net7.0\rpg-2023-Gianiber.pdb
+C:\RepoTaller\rpg-2023-Gianiber\obj\Debug\net7.0\rpg-2023-Gianiber.csproj.AssemblyReference.cache
+C:\RepoTaller\rpg-2023-Gianiber\obj\Debug\net7.0\rpg-2023-Gianiber.GeneratedMSBuildEditorConfig.editorconfig
+C:\RepoTaller\rpg-2023-Gianiber\obj\Debug\net7.0\rpg-2023-Gianiber.AssemblyInfoInputs.cache
+C:\RepoTaller\rpg-2023-Gianiber\obj\Debug\net7.0\rpg-2023-Gianiber.AssemblyInfo.cs
+C:\RepoTaller\rpg-2023-Gianiber\obj\Debug\net7.0\rpg-2023-Gianiber.csproj.CoreCompileInputs.cache
+C:\RepoTaller\rpg-2023-Gianiber\obj\Debug\net7.0\rpg-2023-Gianiber.dll
+C:\RepoTaller\rpg-2023-Gianiber\obj\Debug\net7.0\refint\rpg-2023-Gianiber.dll
+C:\RepoTaller\rpg-2023-Gianiber\obj\Debug\net7.0\rpg-2023-Gianiber.pdb
+C:\RepoTaller\rpg-2023-Gianiber\obj\Debug\net7.0\rpg-2023-Gianiber.genruntimeconfig.cache
+C:\RepoTaller\rpg-2023-Gianiber\obj\Debug\net7.0\ref\rpg-2023-Gianiber.dll
