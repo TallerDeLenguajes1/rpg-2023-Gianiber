@@ -1,15 +1,41 @@
 ﻿using espacioPersonaje;
+using System.Collections.Generic;
+string Archivo = "PersonajesRPG.json";
+PersonajesJson Archivados = new PersonajesJson();
+CombatePersonajes Coliseo = new CombatePersonajes();
+List<FabricaDePersonajes> ListaPj;
 
-FabricaDePersonajes Nuevo = new FabricaDePersonajes();
-Nuevo.CrearPj(Nuevo);
-Console.WriteLine("Velocidad = "+Nuevo.Velocidad);
-Console.WriteLine("Destreza = "+Nuevo.Destreza);
-Console.WriteLine("Fuerza = "+Nuevo.Fuerza);
-Console.WriteLine("Nivel = "+Nuevo.Nivel);
-Console.WriteLine("Armadura = "+Nuevo.Armadura);
-Console.WriteLine("Salud = "+Nuevo.Salud);
-Console.WriteLine("Tipo = "+Nuevo.Tipo);
-Console.WriteLine("Nombre = "+Nuevo.Nombre);
-Console.WriteLine("Apodo = "+Nuevo.Apodo);
-Console.WriteLine("Fecha de nacimiento = "+Nuevo.Fechanac.ToString("dd-MM-yyyy"));
-Console.WriteLine("Edad = "+Nuevo.Edad);
+if (Archivados.Existe(Archivo))
+{
+    ListaPj = Archivados.LeerPersonajes(Archivo);
+}
+else
+{
+    FabricaDePersonajes Nuevo = new FabricaDePersonajes();
+    ListaPj = new List<FabricaDePersonajes>();
+    for (int i = 0; i < 10; i++)
+    {
+        Nuevo = Nuevo.CrearPj();
+        bool bandera = true;
+        foreach (FabricaDePersonajes personajeX in ListaPj)
+        {
+            if (Nuevo.Nombre == personajeX.Nombre && Nuevo.Apodo == personajeX.Apodo)
+            {
+                i--;
+                bandera = false;
+            }
+        }
+        if (bandera)
+        {
+            ListaPj.Add(Nuevo);
+        }
+    }
+    Archivados.GuardarPersonajes(ListaPj, Archivo);
+}
+
+
+while (ListaPj.Count >= 2)
+{
+    Archivados.MostrarPersonaje(ListaPj);
+    Coliseo.Pelea(ref ListaPj);
+}
