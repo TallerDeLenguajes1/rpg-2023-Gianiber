@@ -1,14 +1,16 @@
 using System.Text.Json;
 using System.IO;
 using System.Collections.Generic;
+using System.Net;
 namespace espacioPersonaje
 {
+    //Pool de nombres para generar automáticamente un torneo
     enum Tipo
     {
-        Elfo,
-        Orco,
-        Humano,
-        Enano
+        Elfos,
+        Orcos,
+        Humanos,
+        Enanos
     }
     enum Nombres
     {
@@ -37,6 +39,7 @@ namespace espacioPersonaje
         QuirquinchoRigido,
         BatatadeMonte
     }
+    //Clase que me genera los elementos alrededor de 1 personaje
     class FabricaDePersonajes
     {
         private int destreza;
@@ -50,7 +53,7 @@ namespace espacioPersonaje
         private string? apodo;
         private DateTime fechanac;
         private int edad;
-        public FabricaDePersonajes CrearPj()
+        public FabricaDePersonajes CrearPj() //Devolvera un personaje con todas las stats definidas
         {
             FabricaDePersonajes pj = new FabricaDePersonajes();
             Random random = new Random();
@@ -63,8 +66,8 @@ namespace espacioPersonaje
             pj.tipo = Enum.GetName(typeof(Tipo), random.Next(0, Enum.GetNames(typeof(Tipo)).Length));
             pj.nombre = Enum.GetName(typeof(Nombres), random.Next(0, Enum.GetNames(typeof(Nombres)).Length));
             pj.apodo = Enum.GetName(typeof(Apodos), random.Next(0, Enum.GetNames(typeof(Apodos)).Length));
-            DateTime start = new DateTime(1723, 1, 1);
             DateTime end = DateTime.Now;
+            DateTime start = new DateTime(end.Year - 300, 1, 1);
 
             // Calcular un número de días aleatorio entre las dos fechas
             int range = (end - start).Days;
@@ -87,6 +90,7 @@ namespace espacioPersonaje
         public string? Tipo { get => tipo; set => tipo = value; }
     }
 
+    //Clase que maneja los archivos JSON, ya sea para lectura o escritura
     class PersonajesJson
     {
         public void GuardarPersonajes(List<FabricaDePersonajes> pj, string nombreArchivo)
@@ -104,7 +108,7 @@ namespace espacioPersonaje
             if (File.Exists(nombreArchivo))
             {
                 string pjs = File.ReadAllText(nombreArchivo);
-                List<FabricaDePersonajes> Personajes = JsonSerializer.Deserialize<List<FabricaDePersonajes>>(pjs);
+                List<FabricaDePersonajes>? Personajes = JsonSerializer.Deserialize<List<FabricaDePersonajes>>(pjs);
                 return Personajes;
             }
             else
@@ -124,6 +128,33 @@ namespace espacioPersonaje
                 return false;
             }
         }
+    }
+    public class Flags
+    {
+        public bool nsfw { get; set; }
+        public bool religious { get; set; }
+        public bool political { get; set; }
+        public bool racist { get; set; }
+        public bool sexist { get; set; }
+        public bool @explicit { get; set; }
+    }
+
+    public class Chiste
+    {
+        public bool error { get; set; }
+        public string? category { get; set; }
+        public string? type { get; set; }
+        public string? joke { get; set; }
+        public Flags? flags { get; set; }
+        public int id { get; set; }
+        public bool safe { get; set; }
+        public string? lang { get; set; }
+    }
+
+    //Clase que trabaja con la lista de personajes que van a pelear. Me permite mostrar los personajes y realizar el combate
+    class CombatePersonajes
+    {
+
         public void MostrarPersonaje(List<FabricaDePersonajes> Lista)
         {
             Console.WriteLine($"{"Nombre",-10}\t{"Tipo",-6}\tEdad\tD\tF\tN\tA\tV\tS");
@@ -132,15 +163,13 @@ namespace espacioPersonaje
                 Console.WriteLine($"{personajeX.Nombre,-10}\t{personajeX.Tipo,-6}" + "\t" + personajeX.Edad + "\t" + personajeX.Destreza + "\t" + personajeX.Fuerza + "\t" + personajeX.Nivel + "\t" + personajeX.Armadura + "\t" + personajeX.Velocidad + "\t" + personajeX.Salud);
             }
         }
-    }
-
-    class CombatePersonajes
-    {
-        public void Pelea(ref List<FabricaDePersonajes> pj)
+        public void Pelea(List<FabricaDePersonajes> pj)
         {
             Random aleatorio = new Random();
             int turno = 0;
-            int daño, pj1, pj2;
+            int pj1, pj2;
+            //Elijo dos elementos al azar de la lista y trabajo con ellos, trato de que no sean los mismo elementos,
+            //a su vez guardo la salud inicial del personaje para restaurarla luego de la pelea (puede contener buffs)
             pj1 = aleatorio.Next(0, pj.Count);
             do
             {
@@ -150,25 +179,65 @@ namespace espacioPersonaje
             int salud1 = Personaje1.Salud;
             FabricaDePersonajes Personaje2 = pj[pj2];
             int salud2 = Personaje2.Salud;
-            Console.WriteLine("En el coliseo ahora se encuentran " + Personaje1.Nombre + " del tipo " + Personaje1.Tipo + " y " + Personaje2.Nombre + " del tipo " + Personaje2.Tipo);
+            Console.WriteLine("\nEn el coliseo ahora se encuentran " + Personaje1.Nombre + " del tipo " + Personaje1.Tipo + " y " + Personaje2.Nombre + " del tipo " + Personaje2.Tipo);
+            //En turnos impares atacara el PJ1 y en los pares el PJ2
             while (Personaje1.Salud >= 0 && Personaje2.Salud! >= 0)
             {
                 turno++;
                 if (turno % 2 == 0)
                 {
-                    daño = (Personaje2.Destreza * Personaje2.Fuerza * Personaje2.Nivel * aleatorio.Next(0, 101) - (Personaje1.Armadura * Personaje1.Velocidad)) / 500;
-                    Personaje1.Salud = Personaje1.Salud - daño;
+                    Personaje1.Salud = Personaje1.Salud - DañoInflingido(aleatorio, Personaje2, Personaje1);
                 }
                 else
                 {
-                    daño = (Personaje1.Destreza * Personaje1.Fuerza * Personaje1.Nivel * aleatorio.Next(0, 101) - (Personaje2.Armadura * Personaje2.Velocidad)) / 500;
-                    Personaje2.Salud = Personaje2.Salud - daño;
+                    Personaje2.Salud = Personaje2.Salud - DañoInflingido(aleatorio, Personaje1, Personaje2);
                 }
             }
+            //El vencedor obtendra buffs en sus stats y el perdedor será eliminado de la lista
+            FinDelCombate(pj, turno, pj1, pj2, Personaje1, salud1, Personaje2, salud2);
+        }
+        static string Frase()
+        {
+            var url = $"https://v2.jokeapi.dev/joke/Any?type=single";
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "GET";
+            request.ContentType = "application/json";
+            request.Accept = "application/json";
+            try
+            {
+                using (WebResponse response = request.GetResponse())
+                {
+                    using (Stream strReader = response.GetResponseStream())
+                    {
+                        if (strReader != null)
+                        {
+                            using (StreamReader objReader = new StreamReader(strReader))
+                            {
+                                string responseBody = objReader.ReadToEnd();
+                                Chiste? Respuesta = JsonSerializer.Deserialize<Chiste>(responseBody);
+                                return Respuesta.joke;
+                            }
+                        }
+                        else
+                        {
+                            return "No hay chiste";
+                        }
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                string respuesta = "Problemas de acceso a la API";
+                return respuesta;
+            }
+        }
+        static void FinDelCombate(List<FabricaDePersonajes> pj, int turno, int pj1, int pj2, FabricaDePersonajes Personaje1, int salud1, FabricaDePersonajes Personaje2, int salud2)
+        {
             if (Personaje1.Salud <= 0)
             {
                 Personaje2.Salud = salud2;
-                Console.WriteLine("El ganador de este combate fue " + Personaje1.Nombre + " de la raza " + Personaje1.Tipo + " en " + turno + " turnos");
+                Console.WriteLine("\nEl ganador de este combate fue " + Personaje2.Nombre + " de la raza " + Personaje2.Tipo + " en " + turno + " turnos, que luego le dijo al perdedor:");
+                Console.WriteLine("\""+Frase()+"\"");
                 pj.Remove(pj[pj1]);
                 switch (turno)
                 {
@@ -195,7 +264,8 @@ namespace espacioPersonaje
             else
             {
                 Personaje1.Salud = salud1;
-                Console.WriteLine("El ganador de este combate fue " + Personaje1.Nombre + " de la raza " + Personaje1.Tipo + " en " + turno + " turnos");
+                Console.WriteLine("El ganador de este combate fue " + Personaje1.Nombre + " de la raza " + Personaje1.Tipo + " en " + turno + " turnos, que luego le dijo al perdedor:");
+                Console.WriteLine("\""+Frase()+"\"");
                 pj.Remove(pj[pj2]);
                 switch (turno)
                 {
@@ -219,6 +289,11 @@ namespace espacioPersonaje
                         break;
                 }
             }
+        }
+        static int DañoInflingido(Random aleatorio, FabricaDePersonajes Atacante, FabricaDePersonajes Defensor)
+        {
+            int daño = (Atacante.Destreza * Atacante.Fuerza * Atacante.Nivel * aleatorio.Next(0, 101) - (Defensor.Armadura * Defensor.Velocidad)) / 500;
+            return daño;
         }
     }
 }
