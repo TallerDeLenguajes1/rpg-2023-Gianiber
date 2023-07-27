@@ -53,7 +53,8 @@ namespace espacioPersonaje
         private string? apodo;
         private DateTime fechanac;
         private int edad;
-        public FabricaDePersonajes CrearPj() //Devolvera un personaje con todas las stats definidas
+        private DateTime fechaganada;
+        private FabricaDePersonajes CrearPj() //Devolvera un personaje con todas las stats definidas
         {
             FabricaDePersonajes pj = new FabricaDePersonajes();
             Random random = new Random();
@@ -77,6 +78,30 @@ namespace espacioPersonaje
             return pj;
         }
 
+        public List<FabricaDePersonajes> CrearLista()
+        {
+            FabricaDePersonajes Nuevo = new FabricaDePersonajes();
+            List<FabricaDePersonajes> ListaPj = new List<FabricaDePersonajes>();
+            for (int i = 0; i < 10; i++)
+            {
+                Nuevo = Nuevo.CrearPj();
+                bool bandera = true;
+                foreach (FabricaDePersonajes personajeX in ListaPj)
+                {
+                    if (Nuevo.Nombre == personajeX.Nombre && Nuevo.Apodo == personajeX.Apodo)
+                    {
+                        i--;
+                        bandera = false;
+                    }
+                }
+                if (bandera)
+                {
+                    ListaPj.Add(Nuevo);
+                }
+            }
+            return ListaPj;
+        }
+
         public int Destreza { get => destreza; set => destreza = value; }
         public int Salud { get => salud; set => salud = value; }
         public int Armadura { get => armadura; set => armadura = value; }
@@ -88,6 +113,7 @@ namespace espacioPersonaje
         public DateTime Fechanac { get => fechanac; set => fechanac = value; }
         public int Edad { get => edad; set => edad = value; }
         public string? Tipo { get => tipo; set => tipo = value; }
+        public DateTime Fechaganada { get => fechaganada; set => fechaganada = value; }
     }
 
     //Clase que maneja los archivos JSON, ya sea para lectura o escritura
@@ -102,12 +128,23 @@ namespace espacioPersonaje
             sr.Close();
             Console.WriteLine("Personajes guardados en formato JSON.");
         }
+        public void GuardarUltimoGanador(FabricaDePersonajes pj, string nombreArchivo)
+        {
+            Console.WriteLine("\nFELICIDADES " + pj.Nombre + " REPRESENTANDO A LOS " + pj.Tipo + " POR OBTENER EL TRONO DE HIERRO. QUE SUS HAZAÑAS JAMAS SEAN OLVIDADAS.");
+            pj.Fechaganada = DateTime.Now;
+            string personajesJson = JsonSerializer.Serialize(pj);
+            using FileStream fs = File.Create(nombreArchivo);
+            using StreamWriter sr = new StreamWriter(fs);
+            sr.WriteLine("{0}", personajesJson);
+            sr.Close();
+            Console.WriteLine("Ganador guardado en formato JSON.");
+        }
 
         public List<FabricaDePersonajes> LeerPersonajes(string nombreArchivo)
         {
-            if (File.Exists(nombreArchivo))
+            string pjs = File.ReadAllText(nombreArchivo);
+            if (pjs != null)
             {
-                string pjs = File.ReadAllText(nombreArchivo);
                 List<FabricaDePersonajes>? Personajes = JsonSerializer.Deserialize<List<FabricaDePersonajes>>(pjs);
                 return Personajes;
             }
@@ -196,7 +233,7 @@ namespace espacioPersonaje
             //El vencedor obtendra buffs en sus stats y el perdedor será eliminado de la lista
             FinDelCombate(pj, turno, pj1, pj2, Personaje1, salud1, Personaje2, salud2);
         }
-        static string Frase()
+        private static string Frase()
         {
             var url = $"https://v2.jokeapi.dev/joke/Any?type=single";
             var request = (HttpWebRequest)WebRequest.Create(url);
@@ -231,29 +268,29 @@ namespace espacioPersonaje
                 return respuesta;
             }
         }
-        static void FinDelCombate(List<FabricaDePersonajes> pj, int turno, int pj1, int pj2, FabricaDePersonajes Personaje1, int salud1, FabricaDePersonajes Personaje2, int salud2)
+        private static void FinDelCombate(List<FabricaDePersonajes> pj, int turno, int pj1, int pj2, FabricaDePersonajes Personaje1, int salud1, FabricaDePersonajes Personaje2, int salud2)
         {
             if (Personaje1.Salud <= 0)
             {
                 Personaje2.Salud = salud2;
                 Console.WriteLine("\nEl ganador de este combate fue " + Personaje2.Nombre + " de la raza " + Personaje2.Tipo + " en " + turno + " turnos, que luego le dijo al perdedor:");
-                Console.WriteLine("\""+Frase()+"\"");
+                Console.WriteLine("\"" + Frase() + "\"\n");
                 pj.Remove(pj[pj1]);
                 switch (turno)
                 {
                     case int n when n < 5:
                         Personaje2.Nivel = Personaje2.Nivel + 1;
                         break;
-                    case int n when n >= 5 && n < 10:
+                    case int n when n >= 5 && n <= 7:
                         Personaje2.Nivel = Personaje2.Nivel + 1;
                         Personaje2.Destreza = Personaje2.Destreza + 1;
                         break;
-                    case int n when n >= 10 && n < 15:
+                    case int n when n > 7 && n <= 10:
                         Personaje2.Nivel = Personaje2.Nivel + 1;
                         Personaje2.Destreza = Personaje2.Destreza + 1;
                         Personaje2.Velocidad = Personaje2.Velocidad + 2;
                         break;
-                    case int n when n > 15:
+                    case int n when n > 10:
                         Personaje2.Nivel = Personaje2.Nivel + 1;
                         Personaje2.Destreza = Personaje2.Destreza + 1;
                         Personaje2.Velocidad = Personaje2.Velocidad + 2;
@@ -265,7 +302,7 @@ namespace espacioPersonaje
             {
                 Personaje1.Salud = salud1;
                 Console.WriteLine("El ganador de este combate fue " + Personaje1.Nombre + " de la raza " + Personaje1.Tipo + " en " + turno + " turnos, que luego le dijo al perdedor:");
-                Console.WriteLine("\""+Frase()+"\"");
+                Console.WriteLine("\"" + Frase() + "\"\n");
                 pj.Remove(pj[pj2]);
                 switch (turno)
                 {
@@ -290,9 +327,9 @@ namespace espacioPersonaje
                 }
             }
         }
-        static int DañoInflingido(Random aleatorio, FabricaDePersonajes Atacante, FabricaDePersonajes Defensor)
+        private static int DañoInflingido(Random aleatorio, FabricaDePersonajes Atacante, FabricaDePersonajes Defensor)
         {
-            int daño = (Atacante.Destreza * Atacante.Fuerza * Atacante.Nivel * aleatorio.Next(0, 101) - (Defensor.Armadura * Defensor.Velocidad)) / 500;
+            int daño = (Atacante.Destreza * Atacante.Fuerza * Atacante.Nivel * aleatorio.Next(1, 101) - (Defensor.Armadura * Defensor.Velocidad)) / 500;
             return daño;
         }
     }
